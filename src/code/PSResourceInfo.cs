@@ -2026,14 +2026,15 @@ namespace Microsoft.PowerShell.PSResourceGet.UtilClasses
 
         public static string SelectV3PackageContentUrl(
             string[] versionedResponses,
-            string version)
+            string version,
+            string packageName)
         {
             if (!NuGetVersion.TryParse(version, out NuGetVersion requiredVersion))
             {
                 throw new PSArgumentException($"Version '{version}' is not a valid NuGet version.");
             }
 
-            return Cmdlets.V3ServerAPICalls.GetPackageContentUrlForVersion(versionedResponses, requiredVersion);
+            return Cmdlets.V3ServerAPICalls.GetPackageContentUrlForVersion(versionedResponses, requiredVersion, packageName);
         }
     }
 

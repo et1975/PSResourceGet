@@ -15,12 +15,12 @@ Describe 'Test V3 packageContent url selection for a required version' -tags 'CI
     }
 
     It 'Should select the url for the exact version requested' {
-        $url = [Microsoft.PowerShell.PSResourceGet.UtilClasses.TestHooks]::SelectV3PackageContentUrl($versionedResponses, '1.2.3')
+        $url = [Microsoft.PowerShell.PSResourceGet.UtilClasses.TestHooks]::SelectV3PackageContentUrl($versionedResponses, '1.2.3', 'test_module')
         $url | Should -BeExactly "$packageBaseAddress/1.2.3/test_module.1.2.3.nupkg"
     }
 
     It 'Should select the url for a version which another version is a prefix of' {
-        $url = [Microsoft.PowerShell.PSResourceGet.UtilClasses.TestHooks]::SelectV3PackageContentUrl($versionedResponses, '1.2.30')
+        $url = [Microsoft.PowerShell.PSResourceGet.UtilClasses.TestHooks]::SelectV3PackageContentUrl($versionedResponses, '1.2.30', 'test_module')
         $url | Should -BeExactly "$packageBaseAddress/1.2.30/test_module.1.2.30.nupkg"
     }
 
@@ -29,8 +29,17 @@ Describe 'Test V3 packageContent url selection for a required version' -tags 'CI
             "$packageBaseAddress/2024.5.20.12/test_module.2024.5.20.12.nupkg",
             "$packageBaseAddress/2024.5.20.1/test_module.2024.5.20.1.nupkg"
         )
-        $url = [Microsoft.PowerShell.PSResourceGet.UtilClasses.TestHooks]::SelectV3PackageContentUrl($responses, '2024.5.20.1')
+        $url = [Microsoft.PowerShell.PSResourceGet.UtilClasses.TestHooks]::SelectV3PackageContentUrl($responses, '2024.5.20.1', 'test_module')
         $url | Should -BeExactly "$packageBaseAddress/2024.5.20.1/test_module.2024.5.20.1.nupkg"
+    }
+
+    It 'Should not select a url whose file name has the requested version as part of another version' {
+        $responses = @(
+            "$packageBaseAddress/3.2.5.1/test_module.3.2.5.1.nupkg",
+            "$packageBaseAddress/2.5.1/test_module.2.5.1.nupkg"
+        )
+        $url = [Microsoft.PowerShell.PSResourceGet.UtilClasses.TestHooks]::SelectV3PackageContentUrl($responses, '2.5.1', 'test_module')
+        $url | Should -BeExactly "$packageBaseAddress/2.5.1/test_module.2.5.1.nupkg"
     }
 
     It 'Should select the url for a prerelease version' {
@@ -38,7 +47,7 @@ Describe 'Test V3 packageContent url selection for a required version' -tags 'CI
             "$packageBaseAddress/2.5.0-beta10/test_module.2.5.0-beta10.nupkg",
             "$packageBaseAddress/2.5.0-beta1/test_module.2.5.0-beta1.nupkg"
         )
-        $url = [Microsoft.PowerShell.PSResourceGet.UtilClasses.TestHooks]::SelectV3PackageContentUrl($responses, '2.5.0-beta1')
+        $url = [Microsoft.PowerShell.PSResourceGet.UtilClasses.TestHooks]::SelectV3PackageContentUrl($responses, '2.5.0-beta1', 'test_module')
         $url | Should -BeExactly "$packageBaseAddress/2.5.0-beta1/test_module.2.5.0-beta1.nupkg"
     }
 
@@ -47,7 +56,7 @@ Describe 'Test V3 packageContent url selection for a required version' -tags 'CI
             "https://www.myget.org/api/download?packageId=test_module&packageVersion=1.2.30",
             "https://www.myget.org/api/download?packageId=test_module&packageVersion=1.2.3"
         )
-        $url = [Microsoft.PowerShell.PSResourceGet.UtilClasses.TestHooks]::SelectV3PackageContentUrl($responses, '1.2.3')
+        $url = [Microsoft.PowerShell.PSResourceGet.UtilClasses.TestHooks]::SelectV3PackageContentUrl($responses, '1.2.3', 'test_module')
         $url | Should -BeExactly "https://www.myget.org/api/download?packageId=test_module&packageVersion=1.2.3"
     }
 
@@ -56,12 +65,12 @@ Describe 'Test V3 packageContent url selection for a required version' -tags 'CI
             "https://www.myget.org/api/download?packageId=1.2.3&packageVersion=1.2.30",
             "https://www.myget.org/api/download?packageId=test_module&packageVersion=1.2.3"
         )
-        $url = [Microsoft.PowerShell.PSResourceGet.UtilClasses.TestHooks]::SelectV3PackageContentUrl($responses, '1.2.3')
+        $url = [Microsoft.PowerShell.PSResourceGet.UtilClasses.TestHooks]::SelectV3PackageContentUrl($responses, '1.2.3', 'test_module')
         $url | Should -BeExactly "https://www.myget.org/api/download?packageId=test_module&packageVersion=1.2.3"
     }
 
     It 'Should not select any url when the requested version is not present' {
-        $url = [Microsoft.PowerShell.PSResourceGet.UtilClasses.TestHooks]::SelectV3PackageContentUrl($versionedResponses, '1.2.4')
+        $url = [Microsoft.PowerShell.PSResourceGet.UtilClasses.TestHooks]::SelectV3PackageContentUrl($versionedResponses, '1.2.4', 'test_module')
         $url | Should -BeNullOrEmpty
     }
 }

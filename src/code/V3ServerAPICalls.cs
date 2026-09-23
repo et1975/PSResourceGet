@@ -913,7 +913,7 @@ debugMsgs.Enqueue($"'{packageName}' version parsed as '{requiredVersion}'");
             }
             else
             {
-                pkgContentUrl = GetPackageContentUrlForVersion(versionedResponses, version);
+                pkgContentUrl = GetPackageContentUrlForVersion(versionedResponses, version, packageName);
             }
 
             if (String.IsNullOrEmpty(pkgContentUrl))
@@ -987,7 +987,7 @@ debugMsgs.Enqueue($"'{packageName}' version parsed as '{requiredVersion}'");
             }
             else
             {
-                pkgContentUrl = GetPackageContentUrlForVersion(versionedResponses, version);
+                pkgContentUrl = GetPackageContentUrlForVersion(versionedResponses, version, packageName);
             }
 
             if (String.IsNullOrEmpty(pkgContentUrl))
@@ -1025,7 +1025,10 @@ debugMsgs.Enqueue($"'{packageName}' version parsed as '{requiredVersion}'");
         /// text anywhere within the entry, as a substring search matches version prefixes too
         /// (i.e requesting version '1.2.3' would match the entry for version '1.2.30').
         /// </summary>
-        internal static string GetPackageContentUrlForVersion(string[] versionedResponses, NuGetVersion requiredVersion)
+        internal static string GetPackageContentUrlForVersion(
+            string[] versionedResponses,
+            NuGetVersion requiredVersion,
+            string packageName)
         {
             if (versionedResponses == null || requiredVersion == null)
             {
@@ -1041,7 +1044,7 @@ debugMsgs.Enqueue($"'{packageName}' version parsed as '{requiredVersion}'");
 
                 // Response will be "packageContent" element value that looks like: "{packageBaseAddress}/{packageName}/{normalizedVersion}/{packageName}.{normalizedVersion}.nupkg"
                 // Ex: https://api.nuget.org/v3-flatcontainer/test_module/1.0.0/test_module.1.0.0.nupkg
-                if (PackageContentUrlMatchesVersion(response, requiredVersion))
+                if (PackageContentUrlMatchesVersion(response, requiredVersion, packageName))
                 {
                     return response;
                 }
@@ -1053,7 +1056,10 @@ debugMsgs.Enqueue($"'{packageName}' version parsed as '{requiredVersion}'");
         /// <summary>
         /// Determines whether the given "packageContent" entry refers to the required version.
         /// </summary>
-        private static bool PackageContentUrlMatchesVersion(string packageContentUrl, NuGetVersion requiredVersion)
+        private static bool PackageContentUrlMatchesVersion(
+            string packageContentUrl,
+            NuGetVersion requiredVersion,
+            string packageName)
         {
             string path = packageContentUrl;
             string query = String.Empty;
@@ -1077,7 +1083,7 @@ debugMsgs.Enqueue($"'{packageName}' version parsed as '{requiredVersion}'");
                 }
 
                 // Last path segment is the file name, ex: "test_module.1.0.0.nupkg"
-                if (segment.EndsWith($".{normalizedVersion}.nupkg", StringComparison.OrdinalIgnoreCase))
+                if (segment.Equals($"{packageName}.{normalizedVersion}.nupkg", StringComparison.OrdinalIgnoreCase))
                 {
                     return true;
                 }
